@@ -16,24 +16,121 @@ import { type AdapterAccount } from "next-auth/adapters";
  */
 export const createTable = sqliteTableCreator((name) => `coleccionapp_${name}`);
 
-export const posts = createTable(
-  "posts",
+// Collections table
+export const collections = createTable(
+  "collections",
   {
     id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-    name: text("name", { length: 256 }),
-    createdById: text("createdById", { length: 255 })
+    userId: text("user_id", { length: 255 })
       .notNull()
       .references(() => users.id),
+    name: text("name", { length: 256 }).notNull(),
+    description: text("description", { length: 1000 }),
     createdAt: int("created_at", { mode: "timestamp" })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: int("updatedAt", { mode: "timestamp" }),
+    updatedAt: int("updated_at", { mode: "timestamp" }),
   },
-  (example) => ({
-    createdByIdIdx: index("createdById_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
+  (table) => ({
+    userIdIdx: index("userId_idx").on(table.userId),
+    collectionNameIdx: index("collection_name_idx").on(table.name),
   }),
 );
+
+export const collectionsRelations = relations(collections, ({ one, many }) => ({
+  user: one(users, {
+    fields: [collections.userId],
+    references: [users.id],
+  }),
+  items: many(items),
+  attributes: many(attributes),
+}));
+
+// Items table
+export const items = createTable(
+  "items",
+  {
+    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    collectionId: int("collection_id", { mode: "number" })
+      .notNull()
+      .references(() => collections.id),
+    name: text("name", { length: 256 }).notNull(),
+    description: text("description", { length: 1000 }),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: int("updated_at", { mode: "timestamp" }),
+  },
+  (table) => ({
+    itemCollectionIdIdx: index("item_collectionId_idx").on(table.collectionId),
+    itemNameIdx: index("item_name_idx").on(table.name),
+  }),
+);
+
+export const itemsRelations = relations(items, ({ one, many }) => ({
+  collection: one(collections, {
+    fields: [items.collectionId],
+    references: [collections.id],
+  }),
+  itemAttributes: many(itemAttributes),
+}));
+
+// Attributes table
+export const attributes = createTable(
+  "attributes",
+  {
+    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    collectionId: int("collection_id", { mode: "number" })
+      .notNull()
+      .references(() => collections.id),
+    name: text("name", { length: 256 }).notNull(),
+    dataType: text("data_type", { length: 50 }).notNull(),
+  },
+  (table) => ({
+    attributeCollectionIdIdx: index("attr_collectionId_idx").on(
+      table.collectionId,
+    ),
+    attributeNameIdx: index("attr_name_idx").on(table.name),
+  }),
+);
+
+export const attributesRelations = relations(attributes, ({ one, many }) => ({
+  collection: one(collections, {
+    fields: [attributes.collectionId],
+    references: [collections.id],
+  }),
+  itemAttributes: many(itemAttributes),
+}));
+
+// Item_Attributes table
+export const itemAttributes = createTable(
+  "item_attributes",
+  {
+    itemId: int("item_id", { mode: "number" })
+      .notNull()
+      .references(() => items.id),
+    attributeId: int("attribute_id", { mode: "number" })
+      .notNull()
+      .references(() => attributes.id),
+    value: text("value", { length: 1000 }).notNull(),
+  },
+  (table) => ({
+    compoundKey: primaryKey({ columns: [table.itemId, table.attributeId] }),
+    itemIdIdx: index("itemId_idx").on(table.itemId),
+    attributeIdIdx: index("attributeId_idx").on(table.attributeId),
+  }),
+);
+
+export const itemAttributesRelations = relations(itemAttributes, ({ one }) => ({
+  item: one(items, {
+    fields: [itemAttributes.itemId],
+    references: [items.id],
+  }),
+  attribute: one(attributes, {
+    fields: [itemAttributes.attributeId],
+    references: [attributes.id],
+  }),
+}));
 
 export const users = createTable("users", {
   id: text("id", { length: 255 }).notNull().primaryKey(),

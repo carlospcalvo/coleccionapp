@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "77bca7db-02fa-4b99-8ccc-52750c087780",
+  "id": "7e8b674a-d176-4f85-8617-0efc133cffd4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "coleccionapp_accounts": {
@@ -120,8 +120,8 @@
       },
       "uniqueConstraints": {}
     },
-    "coleccionapp_posts": {
-      "name": "coleccionapp_posts",
+    "coleccionapp_attributes": {
+      "name": "coleccionapp_attributes",
       "columns": {
         "id": {
           "name": "id",
@@ -130,18 +130,91 @@
           "notNull": true,
           "autoincrement": true
         },
+        "collection_id": {
+          "name": "collection_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "name": {
           "name": "name",
           "type": "text(256)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
-        "createdById": {
-          "name": "createdById",
+        "data_type": {
+          "name": "data_type",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "attr_collectionId_idx": {
+          "name": "attr_collectionId_idx",
+          "columns": [
+            "collection_id"
+          ],
+          "isUnique": false
+        },
+        "attr_name_idx": {
+          "name": "attr_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "coleccionapp_attributes_collection_id_coleccionapp_collections_id_fk": {
+          "name": "coleccionapp_attributes_collection_id_coleccionapp_collections_id_fk",
+          "tableFrom": "coleccionapp_attributes",
+          "tableTo": "coleccionapp_collections",
+          "columnsFrom": [
+            "collection_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "coleccionapp_collections": {
+      "name": "coleccionapp_collections",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "user_id": {
+          "name": "user_id",
           "type": "text(255)",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text(256)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text(1000)",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "created_at": {
@@ -152,8 +225,8 @@
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "updatedAt": {
-          "name": "updatedAt",
+        "updated_at": {
+          "name": "updated_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -161,15 +234,15 @@
         }
       },
       "indexes": {
-        "createdById_idx": {
-          "name": "createdById_idx",
+        "userId_idx": {
+          "name": "userId_idx",
           "columns": [
-            "createdById"
+            "user_id"
           ],
           "isUnique": false
         },
-        "name_idx": {
-          "name": "name_idx",
+        "collection_name_idx": {
+          "name": "collection_name_idx",
           "columns": [
             "name"
           ],
@@ -177,12 +250,173 @@
         }
       },
       "foreignKeys": {
-        "coleccionapp_posts_createdById_coleccionapp_users_id_fk": {
-          "name": "coleccionapp_posts_createdById_coleccionapp_users_id_fk",
-          "tableFrom": "coleccionapp_posts",
+        "coleccionapp_collections_user_id_coleccionapp_users_id_fk": {
+          "name": "coleccionapp_collections_user_id_coleccionapp_users_id_fk",
+          "tableFrom": "coleccionapp_collections",
           "tableTo": "coleccionapp_users",
           "columnsFrom": [
-            "createdById"
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "coleccionapp_item_attributes": {
+      "name": "coleccionapp_item_attributes",
+      "columns": {
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attribute_id": {
+          "name": "attribute_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text(1000)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "itemId_idx": {
+          "name": "itemId_idx",
+          "columns": [
+            "item_id"
+          ],
+          "isUnique": false
+        },
+        "attributeId_idx": {
+          "name": "attributeId_idx",
+          "columns": [
+            "attribute_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "coleccionapp_item_attributes_item_id_coleccionapp_items_id_fk": {
+          "name": "coleccionapp_item_attributes_item_id_coleccionapp_items_id_fk",
+          "tableFrom": "coleccionapp_item_attributes",
+          "tableTo": "coleccionapp_items",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "coleccionapp_item_attributes_attribute_id_coleccionapp_attributes_id_fk": {
+          "name": "coleccionapp_item_attributes_attribute_id_coleccionapp_attributes_id_fk",
+          "tableFrom": "coleccionapp_item_attributes",
+          "tableTo": "coleccionapp_attributes",
+          "columnsFrom": [
+            "attribute_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "coleccionapp_item_attributes_item_id_attribute_id_pk": {
+          "columns": [
+            "attribute_id",
+            "item_id"
+          ],
+          "name": "coleccionapp_item_attributes_item_id_attribute_id_pk"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "coleccionapp_items": {
+      "name": "coleccionapp_items",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "collection_id": {
+          "name": "collection_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text(256)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text(1000)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "item_collectionId_idx": {
+          "name": "item_collectionId_idx",
+          "columns": [
+            "collection_id"
+          ],
+          "isUnique": false
+        },
+        "item_name_idx": {
+          "name": "item_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "coleccionapp_items_collection_id_coleccionapp_collections_id_fk": {
+          "name": "coleccionapp_items_collection_id_coleccionapp_collections_id_fk",
+          "tableFrom": "coleccionapp_items",
+          "tableTo": "coleccionapp_collections",
+          "columnsFrom": [
+            "collection_id"
           ],
           "columnsTo": [
             "id"
