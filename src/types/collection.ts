@@ -1,16 +1,18 @@
 export interface Collection {
-  id: number;
-  userId: string;
-  name: string;
+  id: number | null;
+  userId: string | null;
+  name: string | null;
   description: string | null;
-  createdAt: Date;
+  createdAt: Date | null;
   updatedAt: Date | null;
 }
 
-export interface CollectionFormData
-  extends Omit<
-    Collection,
-    "id" | "userId" | "createdAt" | "updatedAt" | "description"
-  > {
+export interface CollectionWithItemCount extends Collection {
+  itemCount: number;
+}
+
+export interface CollectionFormData {
+  name: string;
   description: string | undefined;
+  userId: string;
 }

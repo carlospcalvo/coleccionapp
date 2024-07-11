@@ -1,23 +1,14 @@
 "use client";
-
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
 import CollectionForm from "./collection-form";
 import { api } from "~/utils/api";
-import { Collection, CollectionFormData } from "~/types/collection";
+import {
+  Collection,
+  CollectionFormData,
+  CollectionWithItemCount,
+} from "~/types/collection";
 import ItemList from "./item-list";
+import CollectionCard from "./collection/card";
 
 export default function CollectionList() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -25,10 +16,14 @@ export default function CollectionList() {
     null,
   );
   const [selectedCollection, setSelectedCollection] =
-    useState<Collection | null>(null);
+    useState<CollectionWithItemCount | null>(null);
 
   const utils = api.useUtils();
-  const collections = api.collections.getAll.useQuery();
+  const {
+    data: collections,
+    error,
+    isLoading,
+  } = api.collections.getAll.useQuery();
   const createCollection = api.collections.create.useMutation({
     onSuccess: () => utils.collections.getAll.invalidate(),
   });
@@ -59,101 +54,104 @@ export default function CollectionList() {
     await deleteCollection.mutateAsync({ id });
   };
 
-  if (collections.isLoading) return <div>Loading...</div>;
-  if (collections.error) return <div>Error: {collections.error.message}</div>;
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
   if (selectedCollection) {
     return (
       <ItemList
-        collectionId={selectedCollection.id}
+        collectionId={selectedCollection.id!}
         onBack={() => setSelectedCollection(null)}
       />
     );
   }
+  // <Button onClick={() => setIsFormOpen(true)}>Create Collection</Button>
+  // {isFormOpen && (
+  //   <CollectionForm
+  //     onSubmit={handleCreateCollection}
+  //     onCancel={() => setIsFormOpen(false)}
+  //   />
+  // )}
 
   return (
-    <div>
-      <Button onClick={() => setIsFormOpen(true)}>Create Collection</Button>
-      {isFormOpen && (
-        <CollectionForm
-          onSubmit={handleCreateCollection}
-          onCancel={() => setIsFormOpen(false)}
-        />
-      )}
-      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {collections.data?.map((collection: Collection) => (
-          <Card
-            className="cursor-pointer"
-            key={collection.id}
-            onClick={(e) => {
-              if (e.defaultPrevented) return; // Exits here if event has been handled
-              e.preventDefault();
-              setSelectedCollection(collection);
-            }}
-          >
-            <CardHeader>
-              <CardTitle>{collection.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>{collection.description}</p>
-              <div className="mt-4 flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditingCollection(collection);
-                  }}
-                >
-                  Edit
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently
-                        delete the collection and all its items.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                      >
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDeleteCollection(collection.id)}
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </CardContent>
-          </Card>
+    <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+      <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
+        {collections?.map((collection: CollectionWithItemCount) => (
+          // <Card
+          //   className="cursor-pointer"
+          //   key={collection.id}
+          //   onClick={(e) => {
+          //     if (e.defaultPrevented) return; // Exits here if event has been handled
+          //     e.preventDefault();
+          //     setSelectedCollection(collection);
+          //   }}
+          // >
+          //   <CardHeader>
+          //     <CardTitle>{collection.name}</CardTitle>
+          //   </CardHeader>
+          //   <CardContent>
+          //     <p>{collection.description}</p>
+          //     <div className="mt-4 flex justify-between">
+          //       <Button
+          //         variant="outline"
+          //         onClick={(e) => {
+          //           e.stopPropagation();
+          //           setEditingCollection(collection);
+          //         }}
+          //       >
+          //         Edit
+          //       </Button>
+          //       <AlertDialog>
+          //         <AlertDialogTrigger asChild>
+          //           <Button
+          //             variant="destructive"
+          //             onClick={(e) => {
+          //               e.stopPropagation();
+          //             }}
+          //           >
+          //             Delete
+          //           </Button>
+          //         </AlertDialogTrigger>
+          //         <AlertDialogContent>
+          //           <AlertDialogHeader>
+          //             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          //             <AlertDialogDescription>
+          //               This action cannot be undone. This will permanently
+          //               delete the collection and all its items.
+          //             </AlertDialogDescription>
+          //           </AlertDialogHeader>
+          //           <AlertDialogFooter>
+          //             <AlertDialogCancel
+          //               onClick={(e) => {
+          //                 e.stopPropagation();
+          //               }}
+          //             >
+          //               Cancel
+          //             </AlertDialogCancel>
+          //             <AlertDialogAction
+          //               onClick={() => handleDeleteCollection(collection.id)}
+          //             >
+          //               Delete
+          //             </AlertDialogAction>
+          //           </AlertDialogFooter>
+          //         </AlertDialogContent>
+          //       </AlertDialog>
+          //     </div>
+          //   </CardContent>
+          // </Card>
+
+          <CollectionCard collection={collection} />
         ))}
       </div>
       {editingCollection && (
         <CollectionForm
           initialData={editingCollection}
           onSubmit={(data) =>
-            handleUpdateCollection(editingCollection.id, data)
+            handleUpdateCollection(editingCollection.id!, data)
           }
           onCancel={() => setEditingCollection(null)}
         />
       )}
-    </div>
+    </main>
   );
 }

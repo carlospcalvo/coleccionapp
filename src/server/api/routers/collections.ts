@@ -1,12 +1,27 @@
-import { eq } from "drizzle-orm";
+import { countDistinct, eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { collections } from "~/server/db/schema";
-import type { Collection } from "~/types/collection";
+import { collections, items } from "~/server/db/schema";
+import type { Collection, CollectionWithItemCount } from "~/types/collection";
+import { coalesce } from "~/utils/drizzle-helpers";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 
 export const collectionsRouter = createTRPCRouter({
-  getAll: publicProcedure.query(async ({ ctx }): Promise<Collection[]> => {
-    return await ctx.db.select().from(collections);
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    // TODO: filter by user id
+    const result: CollectionWithItemCount[] | undefined = await ctx.db
+      .select({
+        id: collections.id,
+        userId: collections.userId,
+        name: collections.name,
+        description: collections.description,
+        createdAt: collections.createdAt,
+        updatedAt: collections.updatedAt,
+        itemCount: coalesce(countDistinct(items.id), sql<number>`0`),
+      })
+      .from(collections)
+      .fullJoin(items, eq(collections.id, items.collectionId))
+      .groupBy(collections.id);
+    return result;
   }),
 
   getById: publicProcedure
