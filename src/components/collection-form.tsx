@@ -22,7 +22,7 @@ export default function CollectionForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name, description });
+    onSubmit({ name, description, userId: "TEST" });
   };
 
   return (
